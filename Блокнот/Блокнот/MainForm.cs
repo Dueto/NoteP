@@ -69,7 +69,115 @@ namespace Блокнот
                 return false;
         }
 
-       
+        //Функция поиска следующего слова
+        public void FindNextString()
+        {
+            int index;
+
+            if (WorkSpace.SelectionStart + WorkSpace.SelectionLength < WorkSpace.Text.Length)
+            {
+                if (register == true)
+                    index = WorkSpace.Text.IndexOf(stringToFind, WorkSpace.SelectionStart + WorkSpace.SelectionLength);
+                else
+                    index = WorkSpace.Text.ToLower().IndexOf(stringToFind.ToLower(), WorkSpace.SelectionStart + WorkSpace.SelectionLength);
+            }
+            else
+                index = -1;
+
+            if (index == -1)
+                MessageBox.Show("Не удается найти " + "\"" + stringToFind + "\"", "Блокнот", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            else
+            {
+                WorkSpace.SelectionStart = index;
+                WorkSpace.SelectionLength = stringToFind.Length;
+            }
+        }
+
+        //Функция поискапредыдущего слова
+        public void FindPrevString()
+        {
+            int index;
+
+            if (WorkSpace.SelectionStart > 0)
+            {
+                if (register == true)
+                    index = WorkSpace.Text.LastIndexOf(stringToFind, WorkSpace.SelectionStart - 1);
+                else
+                    index = WorkSpace.Text.ToLower().LastIndexOf(stringToFind.ToLower(), WorkSpace.SelectionStart - 1);
+            }
+            else
+                index = -1;
+
+            if (index == -1)
+                MessageBox.Show("Не удается найти " + "\"" + stringToFind + "\"", "Блокнот", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            else
+            {
+                WorkSpace.SelectionStart = index;
+                WorkSpace.SelectionLength = stringToFind.Length;
+            }
+        }
+
+        //Функция вызова формы "Найти"
+        public void ShowFindForm()
+        {
+            Найти SecondForm = new Найти();
+            SecondForm.Owner = this;
+            SecondForm.Show();
+        }
+
+        //Функция вызова формы "Заменить"
+        public void ShowReplaceForm()
+        {
+            Заменить SecondForm = new Заменить();
+            SecondForm.Owner = this;
+            SecondForm.Show();
+        }
+
+        //Функция вызова формы "Перейти"
+        public void ShowGoToDialog()
+        {
+            Перейти SecondForm = new Перейти();
+            SecondForm.Owner = this;
+            SecondForm.ShowDialog();
+        }
+
+        //Перед закрытием Формы
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (InitialText.CompareTo(WorkSpace.Text) != 0)
+            {
+                DialogResult result;
+                result = MessageBox.Show("Сохранить изменения файле " + "\"" + FileName + "\"" + "?", "Блокнот", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Exclamation);
+
+                if (result == DialogResult.Yes)
+                {
+                    if (Save() == false)
+                    {
+                        if (SaveDialog() == false)
+                            e.Cancel = true;
+                    }
+                }
+
+                if (result == DialogResult.Cancel)
+                    e.Cancel = true;
+            }
+        }
+
+        // При открытии формы
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+            stringToPrint = WorkSpace.Text;
+            stringToFind = "";
+            stringToReplace = "";
+            register = false;
+            FromUpToDown = true;
+            InitialText = WorkSpace.Text;
+            FilePath = "";
+            FileName = "Безымянный";
+            WorkSpace.Font = FontDialog.Font;
+            WorkSpace.ForeColor = FontDialog.Color;
+            CursorStatus.Text = "Строка: 1 | Столбец: 1";
+        }
        
 
     }
