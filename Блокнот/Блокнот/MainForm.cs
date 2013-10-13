@@ -308,5 +308,213 @@ namespace Блокнот
             WorkSpace.Copy();
         }
 
+        //Правка -> Вставить
+        private void вставитьMenuItem_Click(object sender, EventArgs e)
+        {
+            WorkSpace.Paste();
+        }
+
+        //Правка -> Удалить
+        private void удалитьMenuItem_Click(object sender, EventArgs e)
+        {
+            WorkSpace.SelectedText = "";
+        }
+
+        //Правка -> Найти
+        private void найтиMenuItem_Click(object sender, EventArgs e)
+        {
+            ShowFindForm();
+        }
+
+        //Правка -> Найти далее
+        private void найтиДалееMenuItem_Click(object sender, EventArgs e)
+        {
+            if (stringToFind.Length != 0)
+            {
+                if (FromUpToDown == true)
+                    FindNextString();
+                else
+                    FindPrevString();
+            }
+            else
+            {
+                ShowFindForm();
+            }
+        }
+
+        //Правка -> Заменить
+        private void заменитьMenuItem_Click(object sender, EventArgs e)
+        {
+            ShowReplaceForm();
+        }
+
+        //Правка -> Перейти
+        private void перейтиMenuItem_Click(object sender, EventArgs e)
+        {
+            ShowGoToDialog();
+        }
+
+        //Правка -> Выделить все
+        private void выделитьВсеMenuItem_Click(object sender, EventArgs e)
+        {
+            WorkSpace.SelectAll();
+        }
+
+        //Правка -> Время и дата
+        private void времяИДатаMenuItem_Click(object sender, EventArgs e)
+        {
+            string CurrentDateTime = DateTime.Now.ToLocalTime().ToString();
+            int InitialSelectionStart = WorkSpace.SelectionStart;
+
+            WorkSpace.Text = WorkSpace.Text.Insert(WorkSpace.SelectionStart, CurrentDateTime);
+            WorkSpace.SelectionStart = InitialSelectionStart + CurrentDateTime.Length;
+        }
+
+        //Формат -> Перенос по словам
+        private void переносПоСловамMenuItem_Click(object sender, EventArgs e)
+        {
+            WorkSpace.WordWrap = переносПоСловамMenuItem.Checked;
+            переносПоСловамToolMenuButton.Checked = переносПоСловамMenuItem.Checked;
+            перейтиMenuItem.Enabled = !переносПоСловамMenuItem.Checked;
+        }
+
+        //Перенос по словам
+        private void переносПоСловамToolMenuButton_Click(object sender, EventArgs e)
+        {
+            WorkSpace.WordWrap = переносПоСловамToolMenuButton.Checked;
+            переносПоСловамMenuItem.Checked = переносПоСловамToolMenuButton.Checked;
+            перейтиMenuItem.Enabled = !переносПоСловамMenuItem.Checked;
+        }
+
+        //Формат -> Шрифт
+        private void шрифтMenuItem_Click(object sender, EventArgs e)
+        {
+            if (FontDialog.ShowDialog() == DialogResult.OK)
+            {
+                WorkSpace.SelectionFont = FontDialog.Font;
+                WorkSpace.SelectionColor = FontDialog.Color;
+            }
+        }
+
+        //Формат -> Включить EN
+        private void включитьENMenuItem_Click(object sender, EventArgs e)
+        {
+            включитьENToolMenuButton.Checked = включитьENMenuItem.Checked;
+        }
+
+        //Включить EN
+        private void включитьENToolMenuButton_Click(object sender, EventArgs e)
+        {
+            включитьENMenuItem.Checked = включитьENToolMenuButton.Checked;
+        }
+
+        //Вид -> Строка состояния
+        private void строкаСостоянияMenuItem_Click(object sender, EventArgs e)
+        {
+            Status.Visible = строкаСостоянияMenuItem.Checked;
+            строкаСостоянияToolMenuButton.Checked = строкаСостоянияMenuItem.Checked;
+        }
+
+        //Строка состояния
+        private void строкаСостоянияToolMenuButton_Click(object sender, EventArgs e)
+        {
+            Status.Visible = строкаСостоянияToolMenuButton.Checked;
+            строкаСостоянияMenuItem.Checked = строкаСостоянияToolMenuButton.Checked;
+        }
+
+        //Спрафка -> О программе
+        private void оПрограммеMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Программа разработана для сдачи ИДЗ по ТХИ :)", "О программе", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        // порядок чтения строки
+        private void порядокЧтенияСправоНалевоContextMenuItem_Click(object sender, EventArgs e)
+        {
+            if (порядокЧтенияСправоНалевоContextMenuItem.Checked == true)
+                WorkSpace.RightToLeft = RightToLeft.Yes;
+            else
+                WorkSpace.RightToLeft = RightToLeft.No;
+        }
+
+        //Распечатка
+        private void PrintDocument_PrintPage(object sender, PrintPageEventArgs e)
+        {
+            int charactersOnPage = 0;
+            int linesPerPage = 0;
+
+            e.Graphics.MeasureString(stringToPrint, FontDialog.Font,
+                e.MarginBounds.Size, StringFormat.GenericTypographic,
+                out charactersOnPage, out linesPerPage);
+
+            e.Graphics.DrawString(stringToPrint, FontDialog.Font, Brushes.Black,
+                e.MarginBounds, StringFormat.GenericTypographic);
+
+            stringToPrint = stringToPrint.Substring(charactersOnPage);
+
+            e.HasMorePages = (stringToPrint.Length > 0);
+
+            if (!e.HasMorePages)
+                stringToPrint = WorkSpace.Text;
+        }
+
+
+        private void WorkSpace_TextChanged(object sender, EventArgs e)
+        {
+            if (WorkSpace.Text.Length == 0)
+            {
+                найтиMenuItem.Enabled = false;
+                найтиДалееMenuItem.Enabled = false;
+            }
+            else
+            {
+                найтиMenuItem.Enabled = true;
+                найтиДалееMenuItem.Enabled = true;
+            }
+        }
+
+        //работа со строкой
+        private void WorkSpace_SelectionChanged(object sender, EventArgs e)
+        {
+            Point p = new Point();
+            p.Y = WorkSpace.GetLineFromCharIndex(WorkSpace.SelectionStart) + 1;
+            p.X = WorkSpace.SelectionStart - WorkSpace.GetFirstCharIndexOfCurrentLine() + 1;
+
+            CursorStatus.Text = "Строка: " + p.Y + " | Столбец: " + p.X;
+
+            if (WorkSpace.SelectionLength == 0)
+            {
+                вырезатьMenuItem.Enabled = false;
+                вырезатьContextMenuItem.Enabled = false;
+                копироватьMenuItem.Enabled = false;
+                копироватьContextMenuItem.Enabled = false;
+                удалитьMenuItem.Enabled = false;
+                удалитьContextMenuItem.Enabled = false;
+            }
+            else
+            {
+                вырезатьMenuItem.Enabled = true;
+                вырезатьContextMenuItem.Enabled = true;
+                копироватьMenuItem.Enabled = true;
+                копироватьContextMenuItem.Enabled = true;
+                удалитьMenuItem.Enabled = true;
+                удалитьContextMenuItem.Enabled = true;
+            }
+        }
+
+
+        private void WorkSpace_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (включитьENMenuItem.Checked == false)
+            {
+                int index = English.IndexOf(e.KeyChar);
+
+                if (index != -1)
+                {
+                    e.KeyChar = Russian[index];
+                }
+            }
+        }
+
     }
 }
