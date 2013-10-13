@@ -166,6 +166,7 @@ namespace Блокнот
         // При открытии формы
         private void MainForm_Load(object sender, EventArgs e)
         {
+		
             stringToPrint = WorkSpace.Text;
             stringToFind = "";
             stringToReplace = "";
@@ -179,6 +180,133 @@ namespace Блокнот
             CursorStatus.Text = "Строка: 1 | Столбец: 1";
         }
        
+	   //Файл -> Создать
+        private void создатьMenuItem_Click(object sender, EventArgs e)
+        {
+            WorkSpace.Clear();
+
+            FilePath = "";
+            FileName = "Безымянный";
+            InitialText = WorkSpace.Text;
+         
+            this.Text = FileName + " - Блокнот";
+            SaveFileDialog.FileName = "*.txt";
+        
+            CursorStatus.Text = "Строка: 1 | Столбец: 1";
+        }
+
+        //Файл -> Открыть...
+        private void открытьMenuItem_Click(object sender, EventArgs e)
+        {
+            bool cancel = false;
+
+            if (InitialText.CompareTo(WorkSpace.Text) != 0)
+            {
+                DialogResult result;
+                result = MessageBox.Show("Сохранить изменения файле " + "\"" + FileName + "\"" + "?", "Блокнот", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Exclamation);
+
+                if (result == DialogResult.Yes)
+                {
+                    if (Save() == false)
+                    {
+                        if (SaveDialog() == false)
+                            cancel = true;
+                    }
+                }
+
+                if (result == DialogResult.Cancel)
+                    cancel = true;
+            }
+
+            if (cancel == false)
+            {
+                OpenFileDialog.FileName = "";
+
+                if (OpenFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    StreamReader OpenFile = new StreamReader(OpenFileDialog.FileName);
+                    WorkSpace.Text = OpenFile.ReadToEnd();
+                    OpenFile.Close();
+
+                    FilePath = OpenFileDialog.FileName;
+                    FileName = OpenFileDialog.SafeFileName;
+                    InitialText = WorkSpace.Text;
+         
+                    this.Text = FileName + " - Блокнот";
+                    SaveFileDialog.FileName = FileName;
+                }
+            }
+        
+            CursorStatus.Text = "Строка: 1 | Столбец: 1";
+        }
+
+        //Файл -> Сохранить
+        private void сохранитьMenuItem_Click(object sender, EventArgs e)
+        {
+            if (Save() == false)
+                SaveDialog();
+        }
+
+        //Файл -> Сохранить как...
+        private void сохранитьКакMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveDialog();
+        }
+
+        //Файл -> Параметры страницы
+        private void параметрыСтраницыMenuItem_Click(object sender, EventArgs e)
+        {
+            PageSetupDialog.ShowDialog();
+        }
+
+        //Файл -> Предварительный просмотр
+        private void предварительныйПросмотрMenuItem_Click(object sender, EventArgs e)
+        {
+            PrintDocument.DocumentName = FileName;
+            stringToPrint = WorkSpace.Text;
+            
+            PrintPreviewDialog.ShowDialog();
+        }
+
+        //Файл -> Печать
+        private void печатьMenuItem_Click(object sender, EventArgs e)
+        {
+            PrintDocument.DocumentName = FileName;
+            stringToPrint = WorkSpace.Text;
+
+            if (PrintDialog.ShowDialog() == DialogResult.OK)
+                PrintDocument.Print();
+        }
+
+        //Файл -> Выход
+        private void выходMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        //Правка -> Отменить
+        private void отменитьMenuItem_Click(object sender, EventArgs e)
+        {
+            WorkSpace.Undo();
+        }
+
+        //Правка -> Вернуть
+        private void вернутьMenuItem_Click(object sender, EventArgs e)
+        {
+            WorkSpace.Redo();
+        }
+
+        //Правка -> Вырезать
+        private void вырезатьMenuItem_Click(object sender, EventArgs e)
+        {
+            WorkSpace.Cut();
+        }
+
+        //Правка -> Копировать
+        private void копироватьMenuItem_Click(object sender, EventArgs e)
+        {
+            WorkSpace.Copy();
+        }
 
     }
 }
